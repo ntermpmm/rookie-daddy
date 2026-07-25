@@ -1,6 +1,14 @@
 import { Clock, Edit2, X } from "lucide-react";
 import { ACTIVITY_TYPES, DAYS_OF_WEEK, type IRoutine } from "../interface";
 
+const getEndTime = (time: string, durationMinutes = 60) => {
+    if (durationMinutes === 1440) return "ทั้งวัน";
+    const [h, m] = time.split(":").map(Number);
+    const date = new Date();
+    date.setHours(h, m + durationMinutes);
+    return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+};
+
 interface RoutineCardProps {
     routine: IRoutine;
     onEdit?: () => void;
@@ -25,7 +33,7 @@ export const RoutineCard = ({ routine, onEdit, onDelete }: RoutineCardProps) => 
                         </h3>
                         <div className="flex items-center gap-1 text-amber-600 font-bold text-sm mt-0.5">
                             <Clock className="w-3.5 h-3.5" />
-                            <span>{routine.time}</span>
+                            <span>{routine.time} {routine.durationMinutes !== 1440 ? `- ${getEndTime(routine.time, routine.durationMinutes)}` : '(ทั้งวัน)'}</span>
                         </div>
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0">
@@ -64,6 +72,11 @@ export const RoutineCard = ({ routine, onEdit, onDelete }: RoutineCardProps) => 
                             </span>
                         );
                     })}
+                    {routine.frequency === "biweekly" && (
+                        <span className="text-[10px] px-2 py-1 ml-2 rounded-md font-bold bg-purple-100 text-purple-700">
+                            เว้นสัปดาห์
+                        </span>
+                    )}
                 </div>
 
                 {routine.note && (

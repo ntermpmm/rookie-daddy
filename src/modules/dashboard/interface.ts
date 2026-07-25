@@ -4,7 +4,8 @@ export type ActivityType =
     | "tutor"
     | "play"
     | "doctor"
-    | "routine";
+    | "routine"
+    | "other";
 
 export interface ActivityTypeInfo {
     id: ActivityType;
@@ -50,6 +51,12 @@ export const ACTIVITY_TYPES: ActivityTypeInfo[] = [
         icon: "🍽️",
         color: "bg-amber-100 text-amber-700 border-amber-200",
     },
+    {
+        id: "other",
+        label: "อื่นๆ",
+        icon: "📌",
+        color: "bg-slate-100 text-slate-700 border-slate-200",
+    },
 ];
 
 export const DAYS_OF_WEEK = [
@@ -66,17 +73,23 @@ export interface IActivity {
     id: string;
     type: ActivityType;
     date: string; // YYYY-MM-DD
+    endDate?: string; // YYYY-MM-DD for multi-day events
     time: string; // HH:mm
+    durationMinutes?: number; // Duration of the activity in minutes
     note: string;
     createdAt: number;
     isRoutine?: boolean;
+    frequency?: "weekly" | "biweekly";
 }
 
 export interface IRoutine {
     id: string;
     type: ActivityType;
     time: string; // HH:mm
+    durationMinutes?: number; // Duration of the routine in minutes
     days: number[]; // 0-6 corresponding to Date.getDay()
+    frequency?: "weekly" | "biweekly";
+    startDate?: string; // YYYY-MM-DD (Used for biweekly logic)
     note: string;
     createdAt: number;
 }

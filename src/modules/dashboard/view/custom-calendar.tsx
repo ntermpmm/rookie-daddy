@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import type { IActivity } from "../interface";
+import { ChevronLeft, ChevronRight, X, CalendarDays, Clock } from "lucide-react";
+import { motion } from "framer-motion";
+import { ACTIVITY_TYPES, type IActivity } from "../interface";
 import { formatThaiDate } from "../utils";
 
 interface CustomCalendarProps {
@@ -47,14 +48,20 @@ export const CustomCalendar = ({
 
     // Check if a specific date string has any ad-hoc activities
     const hasActivity = (dateStr: string) => {
-        return familyActivities.some((act) => act.date === dateStr);
+        return familyActivities.some((act) => {
+            if (act.date === dateStr) return true;
+            if (act.endDate && dateStr >= act.date && dateStr <= act.endDate) return true;
+            return false;
+        });
     };
 
-    const handleDayClick = (day: number) => {
-        const selectedStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-        onSelectDate(selectedStr);
+    const handleDateSelect = (dateStr: string) => {
+        onSelectDate(dateStr);
         onClose();
     };
+
+    const now = new Date();
+    const localTodayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
     const monthNames = [
         "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
@@ -63,8 +70,22 @@ export const CustomCalendar = ({
     const dayNames = ["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"];
 
     return (
-        <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex flex-col justify-end">
-            <div className="bg-white w-full rounded-t-3xl p-6 shadow-2xl animate-in slide-in-from-bottom-full duration-300">
+        <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex flex-col justify-end"
+            onClick={onClose}
+        >
+            <motion.div 
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className="bg-white w-full rounded-t-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4" />
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-bold text-slate-800">
                         เลือกวันที่
@@ -113,13 +134,13 @@ export const CustomCalendar = ({
                     {days.map((day) => {
                         const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
                         const isSelected = selectedDate === dateStr;
-                        const isToday = new Date().toISOString().split("T")[0] === dateStr;
+                        const isToday = localTodayStr === dateStr;
                         const hasAdhoc = hasActivity(dateStr);
 
                         return (
                             <button
                                 key={day}
-                                onClick={() => handleDayClick(day)}
+                                onClick={() => handleDateSelect(dateStr)}
                                 className={`relative h-12 w-full flex flex-col items-center justify-center rounded-xl font-medium text-sm transition-all active:scale-95 ${
                                     isSelected
                                         ? "bg-blue-600 text-white shadow-md shadow-blue-200"
@@ -140,7 +161,7 @@ export const CustomCalendar = ({
                         );
                     })}
                 </div>
-            </div>
-        </div>
+            </motion.div>
+        </motion.div>
     );
 };

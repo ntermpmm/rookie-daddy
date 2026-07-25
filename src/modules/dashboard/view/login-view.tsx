@@ -23,13 +23,11 @@ export const LoginView = ({
                 <div className="bg-blue-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
                     <BookOpen className="w-10 h-10 text-blue-600" />
                 </div>
-                <h1 className="text-2xl font-bold text-slate-800 mb-2">
-                    KidSync
+                <h1 className="text-3xl font-black text-slate-800 mb-2">
+                    Rookie Daddy
                 </h1>
-                <p className="text-slate-500 mb-8 text-sm">
-                    เชื่อมต่อตารางกิจกรรมของลูก
-                    <br />
-                    ให้พ่อแม่รู้ทุกความเคลื่อนไหว
+                <p className="text-slate-500 mb-8">
+                    จัดการตารางเวลาและกิจวัตรประจำวันของลูกน้อยฉบับคุณพ่อมือใหม่ (พ่อลูกอ่อน)
                 </p>
 
                 <button

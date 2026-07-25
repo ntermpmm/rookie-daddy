@@ -1,9 +1,19 @@
-import { BookOpen, CalendarDays, Repeat, Settings, Star } from "lucide-react";
+import { useState, useEffect } from "react";
+import { BookOpen, CalendarDays, Repeat, Settings, Star, Edit2, X, Clock } from "lucide-react";
 import { ActivityCard } from "./activity-card";
 import { RoutineCard } from "./routine-card";
-import { formatThaiDate } from "../utils";
+import { formatThaiDate, formatThaiDateShort } from "../utils";
 import { CustomCalendar } from "./custom-calendar";
-import type { IActivity, IRoutine } from "../interface";
+import { AnimatePresence } from "framer-motion";
+import { ACTIVITY_TYPES, type IActivity, type IRoutine } from "../interface";
+
+const getEndTime = (time: string, durationMinutes = 60) => {
+    if (durationMinutes === 1440) return "ทั้งวัน";
+    const [h, m] = time.split(":").map(Number);
+    const date = new Date();
+    date.setHours(h, m + durationMinutes);
+    return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+};
 
 interface MainDashboardViewProps {
     familyId: string;
@@ -51,6 +61,45 @@ export const MainDashboardView = ({
     handleDeleteAdhoc,
     handleDeleteRoutine,
 }: MainDashboardViewProps) => {
+    const [nowMinutes, setNowMinutes] = useState(-1);
+    const [localTodayStr, setLocalTodayStr] = useState(new Date().toISOString().split("T")[0]); // Fallback
+    const [hasScrolled, setHasScrolled] = useState(false);
+
+    useEffect(() => {
+        const updateTime = () => {
+            const d = new Date();
+            setNowMinutes(d.getHours() * 60 + d.getMinutes());
+            setLocalTodayStr(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
+        };
+        updateTime();
+        const interval = setInterval(updateTime, 60000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const isTodaySelected = selectedDate === localTodayStr;
+
+    const pinnedActivities = todaysTimeline.filter((act) => act.durationMinutes === 1440 || (act.endDate && act.endDate !== act.date));
+    const timelineActivities = todaysTimeline.filter((act) => !(act.durationMinutes === 1440 || (act.endDate && act.endDate !== act.date)));
+
+    // Reset scroll state when changing tabs or dates
+    useEffect(() => {
+        setHasScrolled(false);
+    }, [selectedDate, activeTab]);
+
+    // Auto-scroll to current or next activity
+    useEffect(() => {
+        if (isTodaySelected && !hasScrolled && nowMinutes >= 0 && activeTab === "today") {
+            const timer = setTimeout(() => {
+                const target = document.getElementById("scroll-target-now") || document.getElementById("scroll-target-next");
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    setHasScrolled(true);
+                }
+            }, 300); // Wait for animations
+            return () => clearTimeout(timer);
+        }
+    }, [isTodaySelected, hasScrolled, nowMinutes, activeTab, todaysTimeline]);
+
     return (
         <div className="h-[100dvh] bg-slate-50 w-full relative shadow-2xl overflow-hidden flex flex-col">
             {/* Header */}
@@ -62,10 +111,10 @@ export const MainDashboardView = ({
                         </div>
                         <div>
                             <h1 className="font-bold text-slate-800 text-xl leading-tight tracking-tight">
-                                KidSync
+                                Rookie Daddy
                             </h1>
                             <p className="text-xs text-slate-500 font-medium">
-                                ตารางกิจกรรมของลูก
+                                ตารางกิจกรรมฉบับพ่อลูกอ่อน
                             </p>
                         </div>
                     </div>
@@ -108,7 +157,7 @@ export const MainDashboardView = ({
                 {activeTab === "today" && (
                     <div className="space-y-5 animate-in fade-in duration-300">
                         {/* ตัวเลือกวันที่ (Date Navigator) */}
-                        <div className="flex items-center justify-between bg-white p-3 rounded-2xl shadow-sm border border-slate-100">
+                        <div className="sticky top-0 z-30 flex items-center justify-between bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-sm border border-slate-100">
                             <button
                                 onClick={() => changeDate(-1)}
                                 className="p-2 text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-xl transition relative z-20"
@@ -140,8 +189,7 @@ export const MainDashboardView = ({
                                 </div>
 
                                 <div className="relative z-20 mt-1 h-5 flex items-center justify-center">
-                                    {selectedDate ===
-                                    new Date().toISOString().split("T")[0] ? (
+                                    {selectedDate === localTodayStr ? (
                                         <span className="text-[10px] bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded-full">
                                             วันนี้
                                         </span>
@@ -180,7 +228,52 @@ export const MainDashboardView = ({
                             </button>
                         </div>
 
-                        {todaysTimeline.length === 0 ? (
+                        {/* Pinned Activities (Sticky) */}
+                        {pinnedActivities.length > 0 && (
+                            <div className="sticky top-[68px] z-20 flex gap-3 overflow-x-auto pb-2 pt-1 scrollbar-hide -mx-4 px-4">
+                                {pinnedActivities.map((act) => {
+                                     const typeInfo = ACTIVITY_TYPES.find((t) => t.id === act.type) || ACTIVITY_TYPES[0];
+                                     return (
+                                         <div 
+                                             key={act.id} 
+                                             className={`flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-100 shadow-sm bg-white`}
+                                         >
+                                             <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-lg ${typeInfo.color}`}>
+                                                 {typeInfo.icon}
+                                             </div>
+                                             <div className="flex flex-col pr-1">
+                                                 <span className="text-xs font-bold text-slate-700">{typeInfo.label}</span>
+                                                 <span className="text-[10px] text-slate-500 font-medium flex items-center gap-1 mt-0.5">
+                                                     <Clock className="w-2.5 h-2.5" />
+                                                     {act.time} {act.durationMinutes !== 1440 ? `- ${getEndTime(act.time, act.durationMinutes)}` : '(ทั้งวัน)'}
+                                                 </span>
+                                                 {act.endDate && act.endDate !== act.date && (
+                                                     <span className="text-[10px] text-purple-600 font-bold mt-0.5">{formatThaiDateShort(act.date)} - {formatThaiDateShort(act.endDate)}</span>
+                                                 )}
+                                             </div>
+                                             {!act.isRoutine && (
+                                                 <div className="flex items-center gap-1 border-l border-slate-100 pl-2 ml-1">
+                                                     <button 
+                                                         onClick={() => setEditingAdhocItem(act)}
+                                                         className="p-1.5 text-slate-300 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition"
+                                                     >
+                                                         <Edit2 className="w-3.5 h-3.5" />
+                                                     </button>
+                                                     <button 
+                                                         onClick={() => handleDeleteAdhoc(act.id)}
+                                                         className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition"
+                                                     >
+                                                         <X className="w-4 h-4" />
+                                                     </button>
+                                                 </div>
+                                             )}
+                                         </div>
+                                     );
+                                })}
+                            </div>
+                        )}
+
+                        {timelineActivities.length === 0 ? (
                             <div className="h-64 flex flex-col items-center justify-center text-center opacity-70">
                                 <div className="text-6xl mb-4 grayscale opacity-50">
                                     🎈
@@ -196,25 +289,62 @@ export const MainDashboardView = ({
                             </div>
                         ) : (
                             <div className="space-y-4 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
-                                {todaysTimeline.map((activity) => (
-                                    <ActivityCard
-                                        key={
-                                            activity.id +
-                                            (activity.isRoutine ? "_r" : "")
+                                {(() => {
+                                    // 1. Pre-calculate statuses
+                                    const statuses = timelineActivities.map((activity) => {
+                                        if (!isTodaySelected || nowMinutes < 0) return null;
+                                        
+                                        const [h, m] = activity.time.split(":").map(Number);
+                                        const actMins = h * 60 + m;
+                                        const duration = activity.durationMinutes || 60;
+                                        
+                                        if (nowMinutes >= actMins && nowMinutes < actMins + duration) {
+                                            return "now";
+                                        } else if (actMins < nowMinutes) {
+                                            return "past";
+                                        } else {
+                                            return "future";
                                         }
-                                        activity={activity}
-                                        onEdit={() =>
-                                            activity.isRoutine
-                                                ? null
-                                                : setEditingAdhocItem(activity)
-                                        }
-                                        onDelete={() =>
-                                            activity.isRoutine
-                                                ? null
-                                                : handleDeleteAdhoc(activity.id)
-                                        }
-                                    />
-                                ))}
+                                    });
+
+                                    // 2. Find primary targets for scrolling
+                                    const primaryNowIndex = statuses.lastIndexOf("now");
+                                    const primaryNextIndex = statuses.indexOf("future");
+
+                                    // 3. Render
+                                    return timelineActivities.map((activity, index) => {
+                                        let status: "past" | "now" | "next" | null = null;
+                                        
+                                        if (statuses[index] === "now") status = "now";
+                                        else if (statuses[index] === "past") status = "past";
+                                        else if (index === primaryNextIndex) status = "next";
+
+                                        const isScrollTargetNow = index === primaryNowIndex;
+                                        const isScrollTargetNext = index === primaryNextIndex;
+
+                                        return (
+                                            <div 
+                                                key={activity.id + (activity.isRoutine ? "_r" : "")} 
+                                                id={isScrollTargetNow ? "scroll-target-now" : isScrollTargetNext ? "scroll-target-next" : undefined}
+                                            >
+                                            <ActivityCard
+                                                activity={activity}
+                                                status={status}
+                                                onEdit={() =>
+                                                    activity.isRoutine
+                                                        ? null
+                                                        : setEditingAdhocItem(activity)
+                                                }
+                                                onDelete={() =>
+                                                    activity.isRoutine
+                                                        ? null
+                                                        : handleDeleteAdhoc(activity.id)
+                                                }
+                                            />
+                                            </div>
+                                        );
+                                    });
+                                })()}
                             </div>
                         )}
                     </div>
@@ -294,14 +424,17 @@ export const MainDashboardView = ({
             </div>
 
             {/* Custom Calendar Modal */}
-            {isCalendarOpen && (
-                <CustomCalendar
-                    selectedDate={selectedDate}
-                    onSelectDate={setSelectedDate}
-                    familyActivities={familyActivities}
-                    onClose={() => setIsCalendarOpen(false)}
-                />
-            )}
+            <AnimatePresence>
+                {isCalendarOpen && (
+                    <CustomCalendar
+                        key="custom-calendar"
+                        selectedDate={selectedDate}
+                        onSelectDate={setSelectedDate}
+                        familyActivities={familyActivities}
+                        onClose={() => setIsCalendarOpen(false)}
+                    />
+                )}
+            </AnimatePresence>
         </div>
     );
 };

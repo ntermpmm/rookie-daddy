@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { CheckCircle2, Copy, LogOut, X } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface SettingsModalProps {
     familyId: string;
@@ -26,8 +27,20 @@ export const SettingsModal = ({
     };
 
     return (
-        <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex flex-col justify-end">
-            <div className="bg-white w-full rounded-t-3xl p-6 shadow-2xl animate-in slide-in-from-bottom-full duration-300">
+        <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex flex-col justify-end"
+        >
+            <motion.div 
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className="bg-white w-full rounded-t-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto"
+            >
+                <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4" />
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-bold text-slate-800">
                         ตั้งค่าครอบครัว
@@ -79,7 +92,7 @@ export const SettingsModal = ({
                         ออกจากครอบครัวนี้
                     </button>
                 </div>
-            </div>
-        </div>
+            </motion.div>
+        </motion.div>
     );
 };
