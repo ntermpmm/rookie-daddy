@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { Repeat, X } from "lucide-react";
 import { motion } from "framer-motion";
-import { ACTIVITY_TYPES, DAYS_OF_WEEK, type ActivityType, type IRoutine } from "../../interface";
+import {
+    ACTIVITY_TYPES,
+    DAYS_OF_WEEK,
+    type ActivityType,
+    type IRoutine,
+} from "../../interface";
 import type { ConfirmAction } from "./confirm-modal";
 
 interface AddRoutineModalProps {
@@ -23,10 +28,14 @@ export const AddRoutineModal = ({
         editItem ? editItem.type : "school",
     );
     const [time, setTime] = useState(editItem ? editItem.time : "08:00");
-    const [durationMinutes, setDurationMinutes] = useState<number>(editItem?.durationMinutes || 60);
-    const [frequency, setFrequency] = useState<"weekly" | "biweekly">(editItem?.frequency || "weekly");
+    const [durationMinutes, setDurationMinutes] = useState<number>(
+        editItem?.durationMinutes || 60,
+    );
+    const [frequency, setFrequency] = useState<"weekly" | "biweekly">(
+        editItem?.frequency || "weekly",
+    );
     const [startDate, setStartDate] = useState<string>(
-        editItem?.startDate || new Date().toISOString().split("T")[0]
+        editItem?.startDate || new Date().toISOString().split("T")[0],
     );
     const [note, setNote] = useState(
         editItem && editItem.note ? editItem.note : "",
@@ -47,24 +56,25 @@ export const AddRoutineModal = ({
     };
 
     const handleSave = () => {
-        const routineData = { 
-            type, 
-            time, 
-            durationMinutes, 
-            days: selectedDays, 
+        const routineData = {
+            type,
+            time,
+            durationMinutes,
+            days: selectedDays,
             frequency,
             startDate: frequency === "biweekly" ? startDate : undefined,
-            note 
+            note,
         };
         if (editItem) {
             requestConfirm({
                 title: "บันทึกการแก้ไข?",
-                message: "คุณต้องการบันทึกการเปลี่ยนแปลงตารางประจำนี้ใช่หรือไม่?",
+                message:
+                    "คุณต้องการบันทึกการเปลี่ยนแปลงตารางประจำนี้ใช่หรือไม่?",
                 confirmText: "บันทึก",
                 onConfirm: () => {
                     onUpdate(editItem.id, routineData);
                     onClose();
-                }
+                },
             });
         } else {
             onSave(routineData);
@@ -73,13 +83,13 @@ export const AddRoutineModal = ({
     };
 
     return (
-        <motion.div 
+        <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex flex-col justify-end"
         >
-            <motion.div 
+            <motion.div
                 initial={{ y: "100%" }}
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
@@ -113,7 +123,9 @@ export const AddRoutineModal = ({
                         </label>
                         <div className="flex gap-2 justify-between">
                             {DAYS_OF_WEEK.map((day) => {
-                                const isSelected = selectedDays.includes(day.id);
+                                const isSelected = selectedDays.includes(
+                                    day.id,
+                                );
                                 return (
                                     <button
                                         key={day.id}
@@ -141,7 +153,7 @@ export const AddRoutineModal = ({
                                 type="time"
                                 value={time}
                                 onChange={(e) => setTime(e.target.value)}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
+                                className="appearance-none w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
                             />
                         </div>
                         <div className="flex-1">
@@ -150,8 +162,10 @@ export const AddRoutineModal = ({
                             </label>
                             <select
                                 value={durationMinutes}
-                                onChange={(e) => setDurationMinutes(Number(e.target.value))}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium appearance-none"
+                                onChange={(e) =>
+                                    setDurationMinutes(Number(e.target.value))
+                                }
+                                className="appearance-none w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium appearance-none"
                             >
                                 <option value={15}>15 นาที</option>
                                 <option value={30}>30 นาที</option>
@@ -173,11 +187,17 @@ export const AddRoutineModal = ({
                             </label>
                             <select
                                 value={frequency}
-                                onChange={(e) => setFrequency(e.target.value as "weekly" | "biweekly")}
+                                onChange={(e) =>
+                                    setFrequency(
+                                        e.target.value as "weekly" | "biweekly",
+                                    )
+                                }
                                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium appearance-none"
                             >
                                 <option value="weekly">ทุกสัปดาห์</option>
-                                <option value="biweekly">อาทิตย์เว้นอาทิตย์</option>
+                                <option value="biweekly">
+                                    อาทิตย์เว้นอาทิตย์
+                                </option>
                             </select>
                         </div>
                         {frequency === "biweekly" && (
@@ -188,7 +208,9 @@ export const AddRoutineModal = ({
                                 <input
                                     type="date"
                                     value={startDate}
-                                    onChange={(e) => setStartDate(e.target.value)}
+                                    onChange={(e) =>
+                                        setStartDate(e.target.value)
+                                    }
                                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
                                 />
                             </div>
@@ -211,7 +233,9 @@ export const AddRoutineModal = ({
                                             : "border-slate-100 bg-white hover:border-slate-200"
                                     }`}
                                 >
-                                    <span className="text-2xl mb-1">{t.icon}</span>
+                                    <span className="text-2xl mb-1">
+                                        {t.icon}
+                                    </span>
                                     <span
                                         className={`text-[10px] font-bold ${
                                             type === t.id

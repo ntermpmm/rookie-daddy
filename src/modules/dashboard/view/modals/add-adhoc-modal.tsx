@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { Star, X } from "lucide-react";
 import { motion } from "framer-motion";
-import { ACTIVITY_TYPES, type IActivity, type ActivityType } from "../../interface";
+import {
+    ACTIVITY_TYPES,
+    type IActivity,
+    type ActivityType,
+} from "../../interface";
 import type { ConfirmAction } from "./confirm-modal";
 
 interface AddAdhocModalProps {
@@ -29,10 +33,14 @@ export const AddAdhocModal = ({
     );
     const [date, setDate] = useState(editItem ? editItem.date : initialDate);
     const [time, setTime] = useState(editItem ? editItem.time : defaultTime);
-    const [durationMinutes, setDurationMinutes] = useState<number>(editItem?.durationMinutes || 60);
+    const [durationMinutes, setDurationMinutes] = useState<number>(
+        editItem?.durationMinutes || 60,
+    );
     const [isMultiDay, setIsMultiDay] = useState<boolean>(!!editItem?.endDate);
-    const [endDate, setEndDate] = useState<string>(editItem?.endDate || initialDate);
-    
+    const [endDate, setEndDate] = useState<string>(
+        editItem?.endDate || initialDate,
+    );
+
     const [note, setNote] = useState(
         editItem && editItem.note ? editItem.note : "",
     );
@@ -46,7 +54,7 @@ export const AddAdhocModal = ({
             endDate: isMultiDay ? endDate : undefined,
             note,
         };
-        
+
         if (editItem) {
             requestConfirm({
                 title: "บันทึกการแก้ไข?",
@@ -55,7 +63,7 @@ export const AddAdhocModal = ({
                 onConfirm: () => {
                     onUpdate(editItem.id, activityData);
                     onClose();
-                }
+                },
             });
         } else {
             onSave(activityData);
@@ -64,13 +72,13 @@ export const AddAdhocModal = ({
     };
 
     return (
-        <motion.div 
+        <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex flex-col justify-end"
         >
-            <motion.div 
+            <motion.div
                 initial={{ y: "100%" }}
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
@@ -85,7 +93,9 @@ export const AddAdhocModal = ({
                                 className="w-6 h-6 text-blue-500"
                                 fill="currentColor"
                             />{" "}
-                            {editItem ? "แก้ไขกิจกรรมพิเศษ" : "เพิ่มกิจกรรมพิเศษ"}
+                            {editItem
+                                ? "แก้ไขกิจกรรมพิเศษ"
+                                : "เพิ่มกิจกรรมพิเศษ"}
                         </h2>
                         <p className="text-xs text-slate-500 mt-1 font-medium">
                             เกิดขึ้นเฉพาะวันที่เลือก ไม่ซ้ำกับวันอื่น
@@ -102,27 +112,27 @@ export const AddAdhocModal = ({
                 <div className="space-y-5">
                     {/* วันที่ เวลา และระยะเวลา */}
                     <div className="space-y-4">
-                        <div className="flex gap-4">
-                            <div className="flex-1">
-                                <label className="block text-sm font-bold text-slate-700 mb-2">
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="min-w-0">
+                                <label className="block text-sm font-bold text-slate-700 mb-2 truncate">
                                     วันที่เริ่มต้น
                                 </label>
                                 <input
                                     type="date"
                                     value={date}
                                     onChange={(e) => setDate(e.target.value)}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium appearance-none"
                                 />
                             </div>
-                            <div className="flex-[0.8]">
-                                <label className="block text-sm font-bold text-slate-700 mb-2">
+                            <div className="min-w-0">
+                                <label className="block text-sm font-bold text-slate-700 mb-2 truncate">
                                     เวลา
                                 </label>
                                 <input
                                     type="time"
                                     value={time}
                                     onChange={(e) => setTime(e.target.value)}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium appearance-none"
                                 />
                             </div>
                         </div>
@@ -134,7 +144,11 @@ export const AddAdhocModal = ({
                                 </label>
                                 <select
                                     value={durationMinutes}
-                                    onChange={(e) => setDurationMinutes(Number(e.target.value))}
+                                    onChange={(e) =>
+                                        setDurationMinutes(
+                                            Number(e.target.value),
+                                        )
+                                    }
                                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium appearance-none"
                                 >
                                     <option value={15}>15 นาที</option>
@@ -144,18 +158,24 @@ export const AddAdhocModal = ({
                                     <option value={90}>1.5 ชั่วโมง</option>
                                     <option value={120}>2 ชั่วโมง</option>
                                     <option value={180}>3 ชั่วโมง</option>
-                                    <option value={1440}>ทั้งวัน (24 ชม.)</option>
+                                    <option value={1440}>
+                                        ทั้งวัน (24 ชม.)
+                                    </option>
                                 </select>
                             </div>
                             <div className="flex-1">
                                 <label className="flex items-center gap-2 cursor-pointer mb-3">
-                                    <input 
-                                        type="checkbox" 
-                                        checked={isMultiDay} 
-                                        onChange={(e) => setIsMultiDay(e.target.checked)}
+                                    <input
+                                        type="checkbox"
+                                        checked={isMultiDay}
+                                        onChange={(e) =>
+                                            setIsMultiDay(e.target.checked)
+                                        }
                                         className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                                     />
-                                    <span className="text-sm font-bold text-slate-700">จัดกิจกรรมหลายวัน</span>
+                                    <span className="text-sm font-bold text-slate-700">
+                                        จัดกิจกรรมหลายวัน
+                                    </span>
                                 </label>
                             </div>
                         </div>
@@ -193,7 +213,9 @@ export const AddAdhocModal = ({
                                             : "border-slate-100 bg-white hover:border-slate-200"
                                     }`}
                                 >
-                                    <span className="text-2xl mb-1">{t.icon}</span>
+                                    <span className="text-2xl mb-1">
+                                        {t.icon}
+                                    </span>
                                     <span
                                         className={`text-[10px] font-bold ${
                                             type === t.id
